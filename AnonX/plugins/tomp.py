@@ -9,30 +9,36 @@ from pytgcalls.exceptions import (NoActiveGroupCall, TelegramServerError)
 
 
 
-async def play_audio_files(assistant, chat_id):
-    while True:
-        if not audio_files:
-            await assistant.leave_group_call(chat_id)
-            await message.reply("تم تشغيل جميع المقاطع بنجاح!")
-            break
+audio_files = ["tom.mp3", "ahmed.mp3", "mas.mp3", "tomr.mp3"]
 
-        audio_file = audio_files[0]
-        await assistant.join_group_call(chat_id, AudioPiped(f"./assets/{audio_file}"), stream_type=StreamType().pulse_stream)
-        await message.reply(f"تم تشغيل الملف الصوتي {audio_file} بنجاح!")
-
-        await asyncio.sleep(5)
-        audio_files.append(audio_files.pop(0))
-
-@app.on_message(filters.regex("بدا الالعاب"))
+@app.on_message(filters.regex("العب"))
 async def start_playing(client, message):
     assistant = await group_assistant(Anon, message.chat.id)
     try:
         if "بدأ الألعاب" in message.text:
             await message.reply("جاري تشغيل الألعاب في الكول...")
 
-        global audio_files
-        audio_files = ["tom.mp3", "ahmed.mp3", "mas.mp3", "tomr.mp3"]
-        await play_audio_files(assistant, message.chat.id)
+        audio_file = audio_files[0]
+        if "tom" in message.text:
+            audio_file = audio_files[0]
+        elif "ahmed" in message.text:
+            audio_file = audio_files[1]
+        elif "mas" in message.text:
+            audio_file = audio_files[2]
+        elif "tomr" in message.text:
+            audio_file = audio_files[3]
+
+        await assistant.join_group_call(message.chat.id, AudioPiped(f"./assets/{audio_file}"), stream_type=StreamType().pulse_stream)
+        await message.reply("تم التشغيل بنجاح!")
+
+        while True:
+            if not audio_files:
+                await assistant.leave_group_call(message.chat.id)
+                await message.reply("تم تشغيل جميع المقاطع بنجاح!")
+                break
+
+            await asyncio.sleep(5)
+            audio_files.append(audio_files.pop(0))
 
     except NoActiveGroupCall:
         await message.reply("لا يوجد كول مفتوح يا معلم")
