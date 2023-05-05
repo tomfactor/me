@@ -41,7 +41,7 @@ async def strcall(client, message):
                 await message.reply("تم تشغيل جميع المقاطع بنجاح!")
                 break
 
-            await asyncio.sleep(٥)
+            await asyncio.sleep(5)
 
         audio_files.append(audio_files.pop(0))
 
