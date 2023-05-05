@@ -5,14 +5,12 @@ from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
 from AnonX.core.call import Anon
 from AnonX.utils.database import *
-from pytgcalls.exceptions import (NoActiveGroupCall,TelegramServerError)
-
-import random
+from pytgcalls.exceptions import (NoActiveGroupCall, TelegramServerError)
 
 audio_files = ["tom.mp3", "ahmed.mp3", "mas.mp3", "tomr.mp3"]
 
-@app.on_message(filters.regex("بدأ الألعاب"))
-async def strcall(client, message):
+@app.on_message(filters.regex("بدا الالعاب"))
+async def start_playing(client, message):
     assistant = await group_assistant(Anon, message.chat.id)
     try:
         if "بدأ الألعاب" in message.text:
@@ -32,20 +30,25 @@ async def strcall(client, message):
         await message.reply("تم التشغيل بنجاح!")
 
         while True:
-            if "استوب" in (await app.get_history(message.chat.id, limit=1))[0].text:
-                await assistant.leave_group_call(message.chat.id)
-                await message.reply("تم الإيقاف بنجاح!")
-                break
-            elif not audio_files:
+            if not audio_files:
                 await assistant.leave_group_call(message.chat.id)
                 await message.reply("تم تشغيل جميع المقاطع بنجاح!")
                 break
 
             await asyncio.sleep(5)
-
-        audio_files.append(audio_files.pop(0))
+            audio_files.append(audio_files.pop(0))
 
     except NoActiveGroupCall:
         await message.reply("لا يوجد كول مفتوح يا معلم")
     except TelegramServerError:
-        await message.reply("في مشكلة في الييرفر، ابعت الأمر تاني")
+        await message.reply("في مشكلة في السيرفر، ابعت الأمر تاني")
+
+@app.on_message(filters.regex("ايقاف التشغيل"))
+async def stop_playing(client, message):
+    assistant = await group_assistant(Anon, message.chat.id)
+    try:
+        await assistant.leave_group_call(message.chat.id)
+        await message.reply("تم الإيقاف بنجاح!")
+    except NoActiveGroupCall:
+        await message.reply("لا يوجد كول مفتوح يمعلم")
+
